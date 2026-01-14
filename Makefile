@@ -49,7 +49,7 @@ test:
 	pytest -s tests/
 
 container-test: build-test
-	docker-compose -f tests/docker-compose.yml run --rm test
+	docker compose -f tests/docker-compose.yml run --rm test
 
 shell: build-test
 	docker-compose -f tests/docker-compose.yml run --rm --entrypoint bash test
