@@ -279,6 +279,9 @@ def test_authorization_code_flow_oidc_no_secrets():
     assert_is_jwt_with_signature_verification(token, get_jwks_from_oidc(HYDRA_OIDC_ENDPOINT))
     print("Hydra authorization code flow oidc no secrets completed successfully.")
 
+def test_intentional_failure():
+    """Simple test to verify CI failure reporting."""
+    assert True is False, "PR TEST: This test is designed to fail."
 
 if __name__ == "__main__":
     pytest.main([__file__])
