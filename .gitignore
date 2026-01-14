@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# *egg* files, which can be generated with pip install -e .
+eggs/
+.eggs/
+*.egg
+*.egg-info/
+
+
+# Unit test / coverage reports
+.coverage
+coverage.xml
+tests.xml
+unit-test.xml
+integration-test.xml
+system-test.xml
+
+# Berg output (default directory)
+_berg/
+
+# venv
+venv/
+
+build/
+
+# Ignore test result file
+tests/tests_results.xml
+
+#Pycharm files
+.idea/

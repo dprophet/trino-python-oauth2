@@ -1,0 +1,23 @@
+# Possible configs are here
+# https://www.ory.com/docs/hydra/reference/configuration
+dsn: memory
+
+secrets:
+  system:
+    - youReallyShouldNotUseThisKey-32bytes
+
+strategies:
+  access_token: jwt
+
+oauth2:
+  pkce:
+    enforced: true
+    enforced_for_public_clients: true
+  grant:
+    refresh_token:
+      rotation_grace_period: 1h
+      rotation_grace_reuse_count: 0
+    jwt:
+      jti_optional: false
+      iat_optional: false
+      max_ttl: 1h

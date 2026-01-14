@@ -1,0 +1,61 @@
+version: '3.7'
+
+networks:
+  oauth-test-network:
+    driver: bridge
+
+services:
+  hydra:
+    image: oryd/hydra:v25.4.0
+    container_name: hydra
+    networks:
+      - oauth-test-network
+    ports:
+      - "4444:4444" # Public port
+      - "4445:4445" # Admin port
+      - "5555:5555" # Port for hydra token user
+    command: serve all -c /etc/config/hydra.yml --dev
+    environment:
+      - SERVE_PUBLIC_CORS_ENABLED=true
+      - SERVE_PUBLIC_CORS_ALLOWED_ORIGINS=*
+      - URLS_SELF_ISSUER=${HYDRA_PUBLIC_URL:-http://hydra:4444}
+      - URLS_CONSENT=${CONSENT_URL:-http://consent:3000}/consent
+      - URLS_LOGIN=${CONSENT_URL:-http://consent:3000}/login
+      - URLS_LOGOUT=${CONSENT_URL:-http://consent:3000}/logout
+      - URLS_DEVICE_VERIFICATION=${CONSENT_URL:-http://consent:3000}/device/verify
+      - URLS_DEVICE_SUCCESS=${CONSENT_URL:-http://consent:3000}/device/success
+    volumes:
+      - type: bind
+        source: ./hydra.yml
+        target: /etc/config/hydra.yml
+    restart: on-failure
+
+  consent:
+    image: oryd/hydra-login-consent-node:v25.4.0
+    container_name: consent
+    networks:
+      - oauth-test-network
+    ports:
+      - "3000:3000"
+    environment:
+      - HYDRA_ADMIN_URL=${HYDRA_ADMIN_URL:-http://hydra:4445}
+    restart: on-failure
+
+  test:
+    build:
+      context: ..
+      dockerfile: tests/Dockerfile
+    image: oauth-tests:latest
+    container_name: oauth-tests
+    networks:
+      - oauth-test-network
+    depends_on:
+      - hydra
+      - consent
+    environment:
+      - HYDRA_ADMIN_URL=${HYDRA_ADMIN_URL:-http://hydra:4445}
+      - HYDRA_PUBLIC_URL=${HYDRA_PUBLIC_URL:-http://hydra:4444}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app/tests
+    command: bash -c "python3 tests/configure_hydra.py && pytest -v -s tests/ --junitxml=/app/tests/tests_results.xml"
