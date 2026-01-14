@@ -40,6 +40,10 @@ jobs:
     - name: Run Container Tests
       run: make container-test
 
+    - name: Debug - List files
+      if: always()
+      run: ls -R
+
     # 6. Publish the report
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
