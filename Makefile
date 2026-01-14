@@ -23,7 +23,7 @@ pull:
 	docker pull oryd/hydra-login-consent-node:v25.4.0
 
 build-test:
-	docker-compose -f tests/docker-compose.yml build test
+	docker compose -f tests/docker-compose.yml build test
 
 start-hydra:
 	docker-compose -f tests/docker-compose.yml up -d
@@ -52,7 +52,7 @@ container-test: build-test
 	docker compose -f tests/docker-compose.yml run --rm test
 
 shell: build-test
-	docker-compose -f tests/docker-compose.yml run --rm --entrypoint bash test
+	docker compose -f tests/docker-compose.yml run --rm --entrypoint bash test
 
 test-device-curl:
 	curl --noproxy '*' -s -S -X POST -d "client_id=device-code-client&client_secret=device-code-secret&scope=offline" http://localhost:4444/oauth2/device/auth
