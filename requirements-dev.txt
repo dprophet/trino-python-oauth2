@@ -13,3 +13,4 @@ keyring
 keyrings.alt
 cryptography
 pyjwt[crypto]
+keyrings.cryptfile

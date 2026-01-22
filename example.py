@@ -12,6 +12,8 @@
 
 import logging
 import sys
+import os
+import time
 
 # Configure logging to see what's happening
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -22,6 +24,7 @@ try:
         ClientCredentialsConfig,
         DeviceCodeConfig,
         AuthorizationCodeConfig,
+        ManualUrlsConfig,
         OidcConfig
     )
 except ImportError:
@@ -95,44 +98,30 @@ def example_device_code():
 
 
 def example_authorization_code_flow():
-    print("\n--- Authorization Code Flow ---")
-    print("This flow requires user interaction via browser.")
+    print("--- Authorization Code Flow ---")
 
-    # Callback to handle the URL opening
-    def open_browser_callback(url: str) -> str:
-        print(f"Please open this URL in your browser to authenticate:\n{url}")
-        # In a real app, you might use webbrowser.open(url)
-        # But since this is a local hydra test, you might need to copy-paste it
-        # or have the browser open.
-        # webbrowser.open(url)
+    # In a real app, you need a mechanism to capture the redirect.
+    # Here we mock it or assume the user copy-pastes the code/url if supported.
+    # The current library implementation requires a callback that returns the full redirect URL.
 
-        # In the test environment, the 'redirect_uri' is localhost:61234.
-        # The library expects to receive the full redirect URL including the code.
-        print("\nAfter authenticating, you will see a connection error (because the callback server isn't running) " 
-              "or be redirected to localhost:61234.")
-        print("Copy the FULL URL you were redirected to (including ?code=...) and paste it here:")
-        redirect_response = input("Redirected URL: ").strip()
-        return redirect_response
+    def manual_input_callback(auth_url: str) -> str:
+        print(f"Please visit this URL to authenticate: {auth_url}")
+        redirect_url = input("Paste the full redirect URL here: ")
+        return redirect_url
 
-    # NOTE: The AuthorizationCodeConfig normally expects a server or a way to catch the redirect.
-    # The 'automation_callback' can be used to manually inject the result URL if we don't have a listener.
-    # The library seems to support `automation_callback` which functions as a "get the redirect url" hook.
-
-    oauth_client = OAuth2Client(
+    client = OAuth2Client(
         config=AuthorizationCodeConfig(
-            client_id=AUTHORIZATION_CODE_CLIENT["client_id"],
-            client_secret=AUTHORIZATION_CODE_CLIENT["client_secret"],
-            redirect_uri=AUTHORIZATION_CODE_CLIENT["redirect_uris"][0],
-            url_config=OidcConfig(oidc_discovery_url=HYDRA_OIDC_ENDPOINT),
-            automation_callback=open_browser_callback
+            client_id="my-auth-code-client",
+            client_secret="my-secret",
+            scope="openid offline",
+            redirect_uri="http://localhost:5555/callback",
+            url_config=OidcConfig(oidc_discovery_url="https://hydra.example.com/.well-known/openid-configuration"),
+            automation_callback=manual_input_callback
         )
     )
 
-    try:
-        token = oauth_client.token()
-        print(f"Successfully obtained access token: {token[:20]}...")
-    except Exception as e:
-        print(f"Failed to obtain token: {e}")
+    token = client.token()
+    print(f"Token: {token[:10]}...")
 
 
 if __name__ == "__main__":

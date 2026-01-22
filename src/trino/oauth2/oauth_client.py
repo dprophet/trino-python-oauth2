@@ -18,6 +18,9 @@ from trino.oauth2.models import (
     DeviceCodeConfig,
     AuthorizationCodeConfig
 )
+import keyring
+from keyrings.cryptfile.cryptfile import CryptFileKeyring
+import os
 from trino.oauth2.oauth_flows.oauth_device_code import DeviceCodeOauth
 from trino.oauth2.oauth_flows.oauth_client_credentials import ClientCredentialsOauth
 from trino.oauth2.oauth_flows.oauth_authorization_mode import AuthorizationCodeOauth
@@ -45,12 +48,16 @@ class OAuth2Client:
         config: Union[ClientCredentialsConfig, DeviceCodeConfig, AuthorizationCodeConfig],
         valid_min_duration_threshold: int = configs.VALID_MIN_DURATION_THRESHOLD,
         proxy_url: Optional[str] = None,
+        token_storage_password: Optional[str] = None,
     ) -> None:
         """Base Config that removes as much complexity from user as possible"""
         self.config = config
         self.proxy_url = proxy_url
         self.valid_min_duration_threshold = valid_min_duration_threshold
         self.oauth_flow_client = self._initiate_oauth_flow_client()
+        current_backend = os.environ.get("PYTHON_KEYRING_BACKEND")
+        if not current_backend or current_backend == "keyrings.cryptfile.cryptfile.CryptFileKeyring":
+            self.configure_cryptfile_from_env(token_storage_password=token_storage_password)
 
     def _initiate_oauth_flow_client(
         self,
@@ -84,3 +91,19 @@ class OAuth2Client:
             return access_token
 
         return self.oauth_flow_client.generate_or_refresh_token()
+
+    def configure_cryptfile_from_env(
+            self,
+            env_var: str = "KEYRING_CRYPTFILE_PASSWORD",
+            token_storage_password: Optional[str] = None,
+    ) -> None:
+        pw = os.environ.get(env_var)
+        if not pw:
+            pw = token_storage_password
+
+        if not pw:
+            raise RuntimeError(f"{env_var} is not set and no token_storage_password provided")
+
+        kr = CryptFileKeyring()
+        kr.keyring_key = pw
+        keyring.set_keyring(kr)

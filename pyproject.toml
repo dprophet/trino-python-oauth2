@@ -13,7 +13,8 @@ dependencies = [
     "requests",
     "keyring",
     "requests_oauthlib",
-    "cryptography"
+    "cryptography",
+    "keyrings.cryptfile"
 ]
 
 [tool.setuptools.packages.find]
