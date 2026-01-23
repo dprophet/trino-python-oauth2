@@ -22,9 +22,9 @@ class TestCryptFileLogic(unittest.TestCase):
             url_config=ManualUrlsConfig(token_endpoint="http://test.com")
         )
 
-    @patch('trino.oauth2.oauth_client.keyring')
-    @patch('trino.oauth2.oauth_client.CryptFileKeyring')
-    def test_init_with_token_storage_password(self, mock_kr_cls, mock_keyring):
+    @patch('keyring.set_keyring')
+    @patch('keyrings.cryptfile.cryptfile.CryptFileKeyring')
+    def test_init_with_token_storage_password(self, mock_kr_cls, mock_set_keyring):
         mock_kr_instance = MagicMock()
         mock_kr_cls.return_value = mock_kr_instance
 
@@ -40,11 +40,11 @@ class TestCryptFileLogic(unittest.TestCase):
 
             # Check if keyring key was set to the argument
             self.assertEqual(mock_kr_instance.keyring_key, "password123")
-            mock_keyring.set_keyring.assert_called_with(mock_kr_instance)
+            mock_set_keyring.assert_called_with(mock_kr_instance)
 
-    @patch('trino.oauth2.oauth_client.keyring')
-    @patch('trino.oauth2.oauth_client.CryptFileKeyring')
-    def test_precedence_env_over_arg(self, mock_kr_cls, mock_keyring):
+    @patch('keyring.set_keyring')
+    @patch('keyrings.cryptfile.cryptfile.CryptFileKeyring')
+    def test_precedence_env_over_arg(self, mock_kr_cls, mock_set_keyring):
         mock_kr_instance = MagicMock()
         mock_kr_cls.return_value = mock_kr_instance
 
@@ -60,11 +60,11 @@ class TestCryptFileLogic(unittest.TestCase):
 
             # Check if keyring key was set to the ENV value, not the arg
             self.assertEqual(mock_kr_instance.keyring_key, "env_password_value")
-            mock_keyring.set_keyring.assert_called_with(mock_kr_instance)
+            mock_set_keyring.assert_called_with(mock_kr_instance)
 
-    @patch('trino.oauth2.oauth_client.keyring')
-    @patch('trino.oauth2.oauth_client.CryptFileKeyring')
-    def test_raise_error_if_missing(self, mock_kr_cls, mock_keyring):
+    @patch('keyring.set_keyring')
+    @patch('keyrings.cryptfile.cryptfile.CryptFileKeyring')
+    def test_raise_error_if_missing(self, mock_kr_cls, mock_set_keyring):
         # Simulate Backend set, NO Env Password, NO Arg Password
         with patch.dict(os.environ, {"PYTHON_KEYRING_BACKEND": "keyrings.cryptfile.cryptfile.CryptFileKeyring"}):
             if "KEYRING_CRYPTFILE_PASSWORD" in os.environ:

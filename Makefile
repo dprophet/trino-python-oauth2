@@ -57,6 +57,7 @@ configure-hydra:
 
 test:
 	. venv/bin/activate && \
+	export KEYRING_CRYPTFILE_PASSWORD=password123 && \
 	pytest -s tests/
 
 container-test: build-test

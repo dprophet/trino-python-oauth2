@@ -56,6 +56,7 @@ services:
       - HYDRA_ADMIN_URL=${HYDRA_ADMIN_URL:-http://hydra:4445}
       - HYDRA_PUBLIC_URL=${HYDRA_PUBLIC_URL:-http://hydra:4444}
       - PYTHONUNBUFFERED=1
+      - KEYRING_CRYPTFILE_PASSWORD=password123
     volumes:
       - .:/app/tests
     command: bash -c "python3 tests/configure_hydra.py && pytest -v -s tests/ --junitxml=/app/tests/tests_results.xml"

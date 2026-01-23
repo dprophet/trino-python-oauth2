@@ -18,8 +18,6 @@ from trino.oauth2.models import (
     DeviceCodeConfig,
     AuthorizationCodeConfig
 )
-import keyring
-from keyrings.cryptfile.cryptfile import CryptFileKeyring
 import os
 from trino.oauth2.oauth_flows.oauth_device_code import DeviceCodeOauth
 from trino.oauth2.oauth_flows.oauth_client_credentials import ClientCredentialsOauth
@@ -97,6 +95,10 @@ class OAuth2Client:
             env_var: str = "KEYRING_CRYPTFILE_PASSWORD",
             token_storage_password: Optional[str] = None,
     ) -> None:
+        # this must be lazily loaded only when this class is instantiated, not imported
+        import keyring
+        from keyrings.cryptfile.cryptfile import CryptFileKeyring
+
         pw = os.environ.get(env_var)
         if not pw:
             pw = token_storage_password
